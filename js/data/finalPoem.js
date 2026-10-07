@@ -1,2 +1,2 @@
 // Sustituir este marcador únicamente cuando el desarrollador proporcione el poema final.
-export const finalPoem = ["[POEMA PENDIENTE]"];
+export const finalPoem = ["Gracias por existir, por esforzarte en completar en juego, espero lo hayas disfrutado, esto es una pequeña muestra de el amor tan grande que te tengo, espero nuestra relación siempre sea un juego que siempre podamos completar y del cual siempre lleguemos a un final feliz, Con cariño Para mí Izzyta, besos besos y se te quiere desde lo más fresa del pedazo bosa jejeje"];
