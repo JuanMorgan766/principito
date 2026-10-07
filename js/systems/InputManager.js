@@ -73,7 +73,7 @@ export class InputManager {
   }
 
   consumeContinue() {
-    return this.consumePressedKey(["enter"]);
+    return this.consumePressedKey(["enter", "touch-enter"]);
   }
 
   consumeEnter() {

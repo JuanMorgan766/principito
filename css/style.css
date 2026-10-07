@@ -8,6 +8,13 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   min-height: 100vh;
   margin: 0;
@@ -20,6 +27,9 @@ body {
 .game-container {
   width: min(100%, 1280px);
   padding: clamp(6px, 1.5vw, 16px);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 #gameCanvas {
@@ -30,6 +40,19 @@ body {
   border: 2px solid #f6d365;
   background-color: #17213b;
   box-shadow: 0 12px 32px rgb(0 0 0 / 35%);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@supports (height: 100dvh) {
+  body {
+    min-height: 100dvh;
+  }
+
+  #gameCanvas {
+    max-height: calc(100dvh - 12px);
+  }
 }
 
 .mobile-controls,

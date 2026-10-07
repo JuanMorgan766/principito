@@ -4,6 +4,8 @@ import { readFile } from "node:fs/promises";
 const noop = () => {};
 const storage = new Map();
 const renderedText = [];
+const documentListeners = new Map();
+let fullscreenRequests = 0;
 const gradient = { addColorStop: noop };
 const context = new Proxy({}, {
   get: (target, key) => {
@@ -17,7 +19,7 @@ const context = new Proxy({}, {
 
 globalThis.window = {
   addEventListener: noop,
-  matchMedia: () => ({ matches: false }),
+  matchMedia: (query) => ({ matches: query === "(pointer: coarse)" }),
   AudioContext: class {
     constructor() { this.state = "running"; this.currentTime = 0; this.destination = {}; }
     resume() { return Promise.resolve(); }
@@ -33,7 +35,9 @@ globalThis.window = {
   },
 };
 globalThis.document = {
-  addEventListener: noop,
+  addEventListener: (name, callback) => documentListeners.set(name, callback),
+  documentElement: { requestFullscreen() { fullscreenRequests += 1; return Promise.resolve(); } },
+  fullscreenElement: null,
   querySelector: () => ({ classList: { toggle: noop } }),
   querySelectorAll: () => [],
 };
@@ -60,6 +64,7 @@ const css = await readFile(new URL("../css/style.css", import.meta.url), "utf8")
 const gameSource = await readFile(new URL("../js/Game.js", import.meta.url), "utf8");
 assert.match(css, /@media \(pointer: coarse\) and \(orientation: landscape\)/);
 assert.match(css, /@media \(orientation: portrait\)/);
+assert.match(css, /touch-action: manipulation/);
 assert.match(gameSource, /La aventura para llegar a Neiva/);
 assert.doesNotMatch(gameSource, /Una aventura entre planetas/);
 assert.equal(Object.keys(MUSIC_TRACKS).length, 4);
@@ -100,6 +105,8 @@ function click(game, x, y) {
 
 // Menú, selección bloqueada/desbloqueada y persistencia.
 const { game: menuGame } = createGame();
+documentListeners.get("pointerdown")();
+assert.equal(fullscreenRequests, 1, "The first phone tap should request fullscreen");
 click(menuGame, 640, 400);
 assert.equal(menuGame.selectedCharacter, "Principito");
 menuGame.unlockIsabela();
@@ -114,6 +121,17 @@ for (const [x, expectedLevel] of [[320, 1], [640, 2], [960, 3]]) {
   assert.equal(unlockedGame.levelNumber, expectedLevel);
   assert.equal(unlockedGame.state, GameState.JUGANDO);
 }
+
+// En celular se puede pasar de capítulo tocando el lienzo o el control táctil, sin Enter.
+const { game: tapContinueGame } = createGame();
+tapContinueGame.startLevel(1);
+tapContinueGame.state = GameState.NIVEL_COMPLETADO;
+tapContinueGame.handleCanvasClick({ clientX: 640, clientY: 360 });
+assert.equal(tapContinueGame.levelNumber, 2);
+tapContinueGame.state = GameState.NIVEL_COMPLETADO;
+tapContinueGame.input.activateTouchControl("enter");
+tapContinueGame.update(1 / 60);
+assert.equal(tapContinueGame.levelNumber, 3);
 
 // Los tres capítulos reutilizan el personaje seleccionado y la cámara.
 for (const levelNumber of [1, 2, 3]) {
@@ -490,4 +508,4 @@ assert.equal(hardBossGame.lives, hardStartingLives - 1);
 assert.equal(hardBossGame.level.currentZoneIndex, 0);
 assert.equal(hardBossGame.bossHitsTaken, 0);
 
-console.log("E10 verification passed: E3–E9 gameplay, three difficulties, boss damage, finale, responsive controls, rendering, audio, and title.");
+console.log("E10 verification passed: gameplay, mobile touch progression/fullscreen, three difficulties, boss, finale, rendering, audio, and publication checks.");

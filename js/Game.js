@@ -64,8 +64,12 @@ export class Game {
     this.messageTime = 0;
     this.visualTime = 0;
     this.zoneTransition = null;
+    this.fullscreenRequestPending = false;
     this.canvas.addEventListener("pointerdown", (event) => this.handleCanvasClick(event));
-    document.addEventListener("pointerdown", () => this.audio.unlock(), { passive: true });
+    document.addEventListener("pointerdown", () => {
+      this.audio.unlock();
+      this.requestMobileFullscreen();
+    }, { passive: true });
     document.addEventListener("keydown", () => this.audio.unlock());
     this.updateMobileControlsVisibility();
   }
@@ -180,6 +184,17 @@ export class Game {
       this.audio.resumeMusic();
     }
     this.updateMobileControlsVisibility();
+  }
+
+  requestMobileFullscreen() {
+    if (!window.matchMedia?.("(pointer: coarse)").matches || document.fullscreenElement || this.fullscreenRequestPending) return;
+    const root = document.documentElement;
+    const request = root?.requestFullscreen ?? root?.webkitRequestFullscreen;
+    if (!request) return;
+    this.fullscreenRequestPending = true;
+    Promise.resolve(request.call(root)).catch(() => {}).finally(() => {
+      this.fullscreenRequestPending = false;
+    });
   }
 
   restartCurrentLevel() {
@@ -595,6 +610,10 @@ export class Game {
     if (this.state === GameState.GAME_OVER) {
       if (y >= 400 && y <= 455) this.startNewGame();
       else if (y >= 470 && y <= 525) this.returnToMenu();
+      return;
+    }
+    if (this.state === GameState.NIVEL_COMPLETADO) {
+      this.startLevel(this.levelNumber + 1);
       return;
     }
     if (this.state === GameState.FINAL) {
@@ -1230,7 +1249,7 @@ export class Game {
     if (this.message) { c.textAlign = "center"; c.fillStyle = "#fff7c2"; c.font = "bold 22px Arial"; c.fillText(this.message, this.canvas.width / 2, 90); }
     if (this.zorro?.warning) { c.textAlign = "center"; c.fillStyle = "#fee2e2"; c.font = "bold 22px Arial"; c.fillText("El Zorro detecta un peligro cerca", this.canvas.width / 2, 130); }
     else if (this.zorro?.routeHint && !this.message) { c.textAlign = "center"; c.fillStyle = "#fff0b8"; c.font = "bold 18px Arial"; c.fillText(this.zorro.routeHint, this.canvas.width / 2, 126); }
-    if (this.state === GameState.NIVEL_COMPLETADO) this.drawOverlay("CAPÍTULO COMPLETADO", "Pulsa Enter para continuar");
+    if (this.state === GameState.NIVEL_COMPLETADO) this.drawOverlay("CAPÍTULO COMPLETADO", "Toca la pantalla o pulsa Enter para continuar");
     if (this.state === GameState.PAUSA) this.drawPauseScreen();
     if (this.state === GameState.GAME_OVER) this.drawGameOverScreen();
     if (this.zoneTransition) this.drawZoneTransition();
