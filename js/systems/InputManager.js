@@ -85,6 +85,18 @@ export class InputManager {
   }
 
   bindTouchControls(root) {
+    let lastTouchEnd = null;
+    root.addEventListener("touchend", (event) => {
+      const currentTouchEnd = event.timeStamp;
+      if (lastTouchEnd !== null && currentTouchEnd - lastTouchEnd < 350 && event.cancelable) {
+        event.preventDefault();
+      }
+      lastTouchEnd = currentTouchEnd;
+    }, { passive: false });
+    root.addEventListener("dblclick", (event) => {
+      if (window.matchMedia?.("(pointer: coarse)").matches) event.preventDefault();
+    }, { passive: false });
+
     root.querySelectorAll("[data-control]").forEach((button) => {
       const control = button.dataset.control;
       button.addEventListener("pointerdown", (event) => {
