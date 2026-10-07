@@ -3,11 +3,13 @@ import { readFile } from "node:fs/promises";
 
 const noop = () => {};
 const storage = new Map();
+const renderedText = [];
 const gradient = { addColorStop: noop };
 const context = new Proxy({}, {
   get: (target, key) => {
     if (key === "createLinearGradient" || key === "createRadialGradient") return () => gradient;
     if (key === "measureText") return () => ({ width: 0 });
+    if (key === "fillText") return (text) => renderedText.push(String(text));
     return noop;
   },
   set: () => true,
@@ -222,6 +224,29 @@ assert.equal(game.levelNumber, 1);
 assert.equal(game.lives, 3);
 assert.equal(game.personajeActual.lives, 3);
 
+// Perder una vida reinicia el capítulo activo (no la campaña) con las vidas restantes.
+for (const chapter of [1, 2, 3]) {
+  const { game: respawnGame } = createGame();
+  respawnGame.startLevel(chapter);
+  respawnGame.lives = 3;
+  respawnGame.personajeActual.lives = 3;
+  forceEnemyDeath(respawnGame);
+  assert.equal(respawnGame.lives, 2);
+  assert.equal(respawnGame.levelNumber, chapter);
+  assert.equal(respawnGame.level.id, chapter);
+  assert.equal(respawnGame.state, GameState.JUGANDO);
+  assert.equal(respawnGame.personajeActual.lives, 2);
+  forceEnemyDeath(respawnGame);
+  assert.equal(respawnGame.lives, 1);
+  assert.equal(respawnGame.levelNumber, chapter, "A second lost life must still stay in the active chapter");
+  forceEnemyDeath(respawnGame);
+  assert.equal(respawnGame.lives, 0);
+  assert.equal(respawnGame.state, GameState.GAME_OVER);
+  assert.equal(respawnGame.levelNumber, chapter, "Game Over retains the chapter until the player chooses retry");
+  respawnGame.startNewGame();
+  assert.equal(respawnGame.levelNumber, 1, "Retrying after Game Over starts a fresh campaign");
+}
+
 game.setDifficulty("dificil");
 assert.equal(storage.get("principito-dificultad"), "dificil");
 assert.equal(game.difficulty, "dificil");
@@ -368,12 +393,27 @@ bossGame.advanceFinalSequence();
 assert.equal(bossGame.finalSequence, "juan");
 for (let line = 0; line < 3; line += 1) bossGame.advanceFinalSequence();
 assert.equal(bossGame.finalSequence, "poem");
-assert.match((await import("../js/data/finalPoem.js")).finalPoem[0], /POEMA PENDIENTE/);
+const { finalPoem } = await import("../js/data/finalPoem.js");
+assert.equal(finalPoem.length, 19);
+assert.equal(finalPoem[0], "Gracias por existir,");
+assert.equal(finalPoem.at(-1), "del pedazo Bosa, jejeje.");
 assert.equal(bossGame.isIsabelaUnlocked, false);
+renderedText.length = 0;
+bossGame.render();
+assert.ok(renderedText.includes("Gracias por existir,"));
+assert.ok(renderedText.includes("del pedazo Bosa, jejeje."));
 bossGame.advanceFinalSequence();
 assert.equal(bossGame.finalSequence, "credits");
 assert.equal(bossGame.isIsabelaUnlocked, false, "Isabela remains locked during credits");
-assert.match((await import("../js/data/credits.js")).credits[0].value, /PENDIENTE/);
+const { credits } = await import("../js/data/credits.js");
+assert.equal(credits[0].role, "Poema");
+assert.equal(credits[0].value.split("\n")[4], "");
+assert.equal(credits[0].value.split("\n").at(-1), "cada verso separado.");
+renderedText.length = 0;
+bossGame.render();
+assert.ok(renderedText.includes("Poema"));
+assert.ok(renderedText.includes("Verso uno,"));
+assert.ok(renderedText.includes("cada verso separado."));
 bossGame.advanceFinalSequence();
 assert.equal(bossGame.finalSequence, "victory");
 assert.equal(bossGame.isIsabelaUnlocked, true, "Isabela unlocks after final credits");

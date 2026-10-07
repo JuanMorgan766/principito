@@ -18,5 +18,5 @@ export const finalPoem = [
   "Besos, besos,",
   "y se te quiere",
   "desde lo más fresa",
-  "del pedazo Bosa, jejeje."
+  "del pedazo Bosa, jejeje.",
 ];

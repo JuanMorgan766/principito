@@ -182,7 +182,8 @@ export class Game {
   }
 
   restartCurrentLevel() {
-    this.startLevel(this.levelNumber);
+    // El nivel activo es la fuente de verdad al reiniciar tras recibir daño.
+    this.startLevel(this.level?.id ?? this.levelNumber);
   }
 
   updateMobileControlsVisibility() {
@@ -1144,14 +1145,26 @@ export class Game {
       return;
     }
     if (this.finalSequence === "poem") {
-      this.drawFinalTextPanel("POEMA", finalPoem, "El poema queda editable en js/data/finalPoem.js");
+      this.drawFinalTextPanel("POEMA", finalPoem);
       return;
     }
     if (this.finalSequence === "credits") {
       c.fillStyle = "rgb(14 19 37 / 91%)"; c.fillRect(210, 75, 860, 575);
       c.textAlign = "center"; c.fillStyle = "#ffe6a0"; c.font = "bold 34px Georgia"; c.fillText("CRÉDITOS", 640, 132);
-      c.fillStyle = "#f8f4e3"; c.font = "23px Arial";
-      credits.forEach((item, index) => c.fillText(`${item.role} · ${item.value}`, 640, 210 + index * 55 - this.finalScroll));
+      const creditLines = credits.flatMap((item) => [
+        { text: item.role, heading: true },
+        ...item.value.split(/\r?\n/).map((text) => ({ text, heading: false })),
+        { text: "", heading: false },
+      ]);
+      const lineHeight = 31;
+      const maxScroll = Math.max(0, creditLines.length * lineHeight - 420);
+      const scroll = Math.min(this.finalScroll, maxScroll);
+      creditLines.forEach((line, index) => {
+        if (!line.text) return;
+        c.fillStyle = line.heading ? "#ffe6a0" : "#f8f4e3";
+        c.font = line.heading ? "bold 21px Georgia" : "20px Arial";
+        c.fillText(line.text, 640, 180 + index * lineHeight - scroll);
+      });
       c.fillStyle = "#c9d7e8"; c.font = "14px Arial"; c.fillText("ENTER · CONTINUAR", 640, 620);
       return;
     }
@@ -1162,12 +1175,17 @@ export class Game {
 
   drawFinalTextPanel(title, lines, note) {
     const c = this.context;
-    c.fillStyle = "rgb(14 19 37 / 91%)"; c.beginPath(); c.roundRect(190, 125, 900, 465, 18); c.fill();
+    c.fillStyle = "rgb(14 19 37 / 93%)"; c.beginPath(); c.roundRect(190, 45, 900, 620, 18); c.fill();
     c.strokeStyle = "#e4c67e"; c.lineWidth = 2; c.stroke();
-    c.textAlign = "center"; c.fillStyle = "#ffe6a0"; c.font = "bold 34px Georgia"; c.fillText(title, 640, 195);
-    c.fillStyle = "#f8f4e3"; c.font = "italic 25px Georgia";
-    lines.forEach((line, index) => c.fillText(line, 640, 285 + index * 44));
-    c.fillStyle = "#c9d7e8"; c.font = "16px Arial"; c.fillText(note, 640, 510); c.fillText("ENTER · CONTINUAR", 640, 558);
+    c.textAlign = "center"; c.fillStyle = "#ffe6a0"; c.font = "bold 34px Georgia"; c.fillText(title, 640, 98);
+    const lineHeight = Math.min(30, 440 / Math.max(1, lines.length));
+    const contentHeight = (lines.length - 1) * lineHeight;
+    const firstBaseline = 140 + (420 - contentHeight) / 2;
+    c.fillStyle = "#f8f4e3"; c.font = `italic ${Math.max(16, Math.min(24, lineHeight * 0.88))}px Georgia`;
+    lines.forEach((line, index) => { if (line) c.fillText(line, 640, firstBaseline + index * lineHeight); });
+    c.fillStyle = "#c9d7e8"; c.font = "14px Arial";
+    if (note) c.fillText(note, 640, 610);
+    c.fillText("ENTER · CONTINUAR", 640, 640);
   }
 
   drawGoal() {
