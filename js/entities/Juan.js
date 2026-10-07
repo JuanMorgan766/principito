@@ -16,7 +16,7 @@ export class Juan {
     context.fillStyle = "#141822"; context.fillRect(x + 9, y + 57, 75, 55); context.fillRect(x, y + 63, 23, 58); context.fillRect(x + 72, y + 64, 20, 56);
     context.fillStyle = "#303541"; context.fillRect(x + 18, y + 63, 56, 39); context.fillRect(x + 7, y + 70, 13, 38); context.fillRect(x + 74, y + 71, 11, 37);
     context.fillStyle = "#d3a58d"; context.fillRect(x + 27, y + 19, 41, 48); context.fillRect(x + 20, y + 34, 9, 18); context.fillRect(x + 66, y + 34, 9, 18);
-    context.fillStyle = "#11131c"; context.fillRect(x + 22, y + 8, 47, 18); context.fillRect(x + 17, y + 15, 13, 35); context.fillRect(x + 63, y + 13, 12, 61); context.fillRect(x + 12, y + 42, 13, 57);
+    context.fillStyle = "#11131c"; context.fillRect(x + 22, y + 8, 47, 14); context.fillRect(x + 17, y + 15, 13, 29); context.fillRect(x + 63, y + 13, 12, 51); context.fillRect(x + 12, y + 42, 13, 47);
     context.fillStyle = "#292d39"; context.fillRect(x + 31, y + 28, 16, 11); context.fillRect(x + 50, y + 28, 15, 11);
     context.fillStyle = "#d2d7e3"; context.fillRect(x + 30, y + 29, 17, 3); context.fillRect(x + 49, y + 29, 17, 3); context.fillRect(x + 46, y + 31, 5, 3);
     context.fillStyle = "#171923"; context.fillRect(x + 36, y + 32, 6, 7); context.fillRect(x + 55, y + 32, 6, 7);

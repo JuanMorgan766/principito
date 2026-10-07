@@ -1,14 +1,18 @@
 export const credits = [
   {
-    role: "Poema",
-    value: `Verso uno,
-verso dos,
-verso tres,
-verso cuatro.
+    role: "Créditos",
+    value: `Creado por: Juan David
 
-Y aquí comienza
-otro fragmento del poema,
-manteniendo
-cada verso separado.`,
+Con la ayuda de:
+Kanye West
+
+Productores ejecutivos:
+Mac Miller
+Mac DeMarco
+Ethan
+Valentino
+Messi
+Jesus
+Palestina`,
   },
 ];

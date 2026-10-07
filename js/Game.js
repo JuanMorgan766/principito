@@ -18,6 +18,7 @@ import { credits } from "./data/credits.js";
 
 const UNLOCK_KEY = "principito-isabela-desbloqueada";
 const DIFFICULTY_KEY = "principito-dificultad";
+const FINAL_CARD_DURATION = 15;
 const DIFFICULTIES = {
   facil: { label: "FÁCIL", enemySpeed: 0.9 },
   normal: { label: "NORMAL", enemySpeed: 1 },
@@ -540,14 +541,14 @@ export class Game {
   updateFinalSequence(deltaTime) {
     if (this.finalSequence === "transition") {
       this.finalTimer += deltaTime;
-      if (this.finalTimer >= 1.8) this.advanceFinalSequence();
+      if (this.finalTimer >= FINAL_CARD_DURATION) this.advanceFinalSequence();
     } else if (this.finalSequence === "poem") {
       this.finalTimer += deltaTime;
-      if (this.finalTimer >= 7) this.advanceFinalSequence();
+      if (this.finalTimer >= FINAL_CARD_DURATION) this.advanceFinalSequence();
     } else if (this.finalSequence === "credits") {
       this.finalTimer += deltaTime;
       this.finalScroll += deltaTime * 42;
-      if (this.finalTimer >= 7) this.completeFinalCredits();
+      if (this.finalTimer >= FINAL_CARD_DURATION) this.completeFinalCredits();
     }
   }
 
