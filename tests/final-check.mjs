@@ -65,6 +65,7 @@ const gameSource = await readFile(new URL("../js/Game.js", import.meta.url), "ut
 assert.match(css, /@media \(pointer: coarse\) and \(orientation: landscape\)/);
 assert.match(css, /@media \(orientation: portrait\)/);
 assert.match(css, /touch-action: manipulation/);
+assert.match(css, /touch-action: none/);
 assert.match(gameSource, /La aventura para llegar a Neiva/);
 assert.doesNotMatch(gameSource, /Una aventura entre planetas/);
 assert.equal(Object.keys(MUSIC_TRACKS).length, 4);
@@ -107,6 +108,11 @@ function click(game, x, y) {
 const { game: menuGame } = createGame();
 documentListeners.get("pointerdown")();
 assert.equal(fullscreenRequests, 1, "The first phone tap should request fullscreen");
+let doubleTapPrevented = false;
+const preventSecondTapZoom = documentListeners.get("touchend");
+preventSecondTapZoom({ timeStamp: 1000, cancelable: true, preventDefault: noop });
+preventSecondTapZoom({ timeStamp: 1200, cancelable: true, preventDefault: () => { doubleTapPrevented = true; } });
+assert.equal(doubleTapPrevented, true, "A quick second touch must be prevented from triggering zoom");
 click(menuGame, 640, 400);
 assert.equal(menuGame.selectedCharacter, "Principito");
 menuGame.unlockIsabela();
@@ -509,3 +515,4 @@ assert.equal(hardBossGame.level.currentZoneIndex, 0);
 assert.equal(hardBossGame.bossHitsTaken, 0);
 
 console.log("E10 verification passed: gameplay, mobile touch progression/fullscreen, three difficulties, boss, finale, rendering, audio, and publication checks.");
+
